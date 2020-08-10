@@ -11,8 +11,10 @@ import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.ListIterator;
+import java.util.Random;
 
 /**
  * @author Ashish Kedia and Adarsh Mohata
@@ -61,7 +63,7 @@ public class Main extends JFrame implements MouseListener
 	private ArrayList<Player> wplayer,bplayer;
 	private ArrayList<String> Wnames=new ArrayList<String>();
 	private ArrayList<String> Bnames=new ArrayList<String>();
-	private JComboBox<String> wcombo,bcombo;
+	private JComboBox<String> wcombo,bcombo,game;
 	private String wname=null,bname=null,winner=null;
 	static String move;
 	private Player tempPlayer;
@@ -69,7 +71,7 @@ public class Main extends JFrame implements MouseListener
 	private String[] WNames={},BNames={};
 	private JSlider timeSlider;
 	private BufferedImage image;
-	private Button start,wselect,bselect,WNewPlayer,BNewPlayer;
+	private Button start,wselect,bselect,WNewPlayer,BNewPlayer,test;
 	public static int timeRemaining=60;
 	public static void main(String[] args){
 	
@@ -92,6 +94,9 @@ public class Main extends JFrame implements MouseListener
 	bk=new King("BK","Black_King.png",1,0,3);
 	wp=new Pawn[8];
 	bp=new Pawn[8];
+	
+	
+	//ArrayList<Object> obj = new ArrayList<Object>() { wr01 };
 	for(int i=0;i<8;i++)
 	{
 		wp[i]=new Pawn("WP0"+(i+1),"White_Pawn.png",0);
@@ -104,8 +109,10 @@ public class Main extends JFrame implements MouseListener
 	Mainboard.setResizable(false);
 	}
 	
+
+	
 	//Constructor
-	private Main()
+	public Main()
     {
 		timeRemaining=60;
 		timeSlider = new JSlider();
@@ -147,9 +154,9 @@ public class Main extends JFrame implements MouseListener
 	    WNames=Wnames.toArray(WNames);	
 		BNames=Bnames.toArray(BNames);
 		
-		Cell cell;
+//		Cell cell;
 		board.setBorder(BorderFactory.createLoweredBevelBorder());
-		pieces.Piece P;
+//		pieces.Piece P;
 		content=getContentPane();
 		setSize(Width,Height);
 		setTitle("Chess");
@@ -172,6 +179,9 @@ public class Main extends JFrame implements MouseListener
 		JPanel blackstats=new JPanel(new GridLayout(3,3));
 		wcombo=new JComboBox<String>(WNames);
 		bcombo=new JComboBox<String>(BNames);
+		game=new JComboBox<String>();
+		game.addItem("classic");
+		game.addItem("Chess960");
 		wscroll=new JScrollPane(wcombo);
 		bscroll=new JScrollPane(bcombo);
 		wcombopanel.setLayout(new FlowLayout());
@@ -202,55 +212,7 @@ public class Main extends JFrame implements MouseListener
 		BlackPlayer.add(blackstats,BorderLayout.WEST);
 		controlPanel.add(WhitePlayer);
 		controlPanel.add(BlackPlayer);
-		
-		
-		//Defining all the Cells
-		boardState=new Cell[8][8];
-		for(int i=0;i<8;i++)
-			for(int j=0;j<8;j++)
-			{	
-				P=null;
-				if(i==0&&j==0)
-					P=br01;
-				else if(i==0&&j==7)
-					P=br02;
-				else if(i==7&&j==0)
-					P=wr01;
-				else if(i==7&&j==7)
-					P=wr02;
-				else if(i==0&&j==1)
-					P=bk01;
-				else if (i==0&&j==6)
-					P=bk02;
-				else if(i==7&&j==1)
-					P=wk01;
-				else if (i==7&&j==6)
-					P=wk02;
-				else if(i==0&&j==2)
-					P=bb01;
-				else if (i==0&&j==5)
-					P=bb02;
-				else if(i==7&&j==2)
-					P=wb01;
-				else if(i==7&&j==5)
-					P=wb02;
-				else if(i==0&&j==3)
-					P=bk;
-				else if(i==0&&j==4)
-					P=bq;
-				else if(i==7&&j==3)
-					P=wk;
-				else if(i==7&&j==4)
-					P=wq;
-				else if(i==1)
-				P=bp[j];
-				else if(i==6)
-					P=wp[j];
-				cell=new Cell(i,j,P);
-				cell.addMouseListener(this);
-				board.add(cell);
-				boardState[i][j]=cell;
-			}
+			
 		showPlayer=new JPanel(new FlowLayout());  
 		showPlayer.add(timeSlider);
 		JLabel setTime=new JLabel("Set Timer(in mins):"); 
@@ -258,7 +220,8 @@ public class Main extends JFrame implements MouseListener
 		start.setBackground(Color.black);
 		start.setForeground(Color.white);
 	    start.addActionListener(new START());
-		start.setPreferredSize(new Dimension(120,40));
+		start.setPreferredSize(new Dimension(120,40));		
+		
 		setTime.setFont(new Font("Arial",Font.BOLD,16));
 		label = new JLabel("Time Starts now", JLabel.CENTER);
 		  label.setFont(new Font("SERIF", Font.BOLD, 30));
@@ -267,6 +230,7 @@ public class Main extends JFrame implements MouseListener
 	      time.add(setTime);
 	      time.add(showPlayer);
 	      displayTime.add(start);
+	      displayTime.add(game);
 	      time.add(displayTime);
 	      controlPanel.add(time);
 		board.setMinimumSize(new Dimension(800,700));
@@ -294,6 +258,123 @@ public class Main extends JFrame implements MouseListener
 	    content.add(split);
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
     }
+	
+	
+	public void SetBoard(JComboBox<String> test) {
+		//Defining all the Cells
+		Cell cell;
+		pieces.Piece P;
+		Random rand = new Random();
+		int[] randomNumbers = new int[] {0,1,2,3,4,5,6,7};
+		
+		for (int i = randomNumbers.length - 1; i >= 1; i--)
+		{
+			int j = rand.nextInt(i + 1);
+			 int temp = randomNumbers[i]; 
+			 randomNumbers[i] = randomNumbers[j]; 
+			 randomNumbers[j] = temp; 
+		}
+		
+		
+		if(test.getSelectedItem().equals("Chess960"))
+		{
+			boardState=new Cell[8][8];
+			for(int i=0;i<8;i++)
+				for(int j=0;j<8;j++)
+				{	
+					P=null;
+					if(i==0&&j==randomNumbers[0])
+						P=br01;
+					else if(i==0&&j==randomNumbers[7])
+						P=br02;
+					else if(i==7&&j==randomNumbers[0])
+						P=wr01;
+					else if(i==7&&j==randomNumbers[7])
+						P=wr02;
+					else if(i==0&&j==randomNumbers[1])
+						P=bk01;
+					else if (i==0&&j==randomNumbers[6])
+						P=bk02;
+					else if(i==7&&j==randomNumbers[1])
+						P=wk01;
+					else if (i==7&&j==randomNumbers[6])
+						P=wk02;
+					else if(i==0&&j==randomNumbers[2])
+						P=bb01;
+					else if (i==0&&j==randomNumbers[5])
+						P=bb02;
+					else if(i==7&&j==randomNumbers[2])
+						P=wb01;
+					else if(i==7&&j==randomNumbers[5])
+						P=wb02;
+					else if(i==0&&j==randomNumbers[3])
+						P=bk;
+					else if(i==0&&j==randomNumbers[4])
+						P=bq;
+					else if(i==7&&j==randomNumbers[3])
+						P=wk;
+					else if(i==7&&j==randomNumbers[4])
+						P=wq;
+					else if(i==1)
+					P=bp[j];
+					else if(i==6)
+						P=wp[j];
+					cell=new Cell(i,j,P);
+					cell.addMouseListener(this);
+					board.add(cell);
+					boardState[i][j]=cell;
+				}
+		}
+		else {
+			boardState=new Cell[8][8];
+			for(int i=0;i<8;i++)
+				for(int j=0;j<8;j++)
+				{	
+					P=null;
+					if(i==0&&j==0)
+						P=br01;
+					else if(i==0&&j==7)
+						P=br02;
+					else if(i==7&&j==0)
+						P=wr01;
+					else if(i==7&&j==7)
+						P=wr02;
+					else if(i==0&&j==1)
+						P=bk01;
+					else if (i==0&&j==6)
+						P=bk02;
+					else if(i==7&&j==1)
+						P=wk01;
+					else if (i==7&&j==6)
+						P=wk02;
+					else if(i==0&&j==2)
+						P=bb01;
+					else if (i==0&&j==5)
+						P=bb02;
+					else if(i==7&&j==2)
+						P=wb01;
+					else if(i==7&&j==5)
+						P=wb02;
+					else if(i==0&&j==3)
+						P=bk;
+					else if(i==0&&j==4)
+						P=bq;
+					else if(i==7&&j==3)
+						P=wk;
+					else if(i==7&&j==4)
+						P=wq;
+					else if(i==1)
+					P=bp[j];
+					else if(i==6)
+						P=wp[j];
+					cell=new Cell(i,j,P);
+					cell.addMouseListener(this);
+					board.add(cell);
+					boardState[i][j]=cell;
+				}
+			
+		}
+	}
 	
 	// A function to change the chance from White Player to Black Player or vice verse
 	// It is made public because it is to be accessed in the Time Class
@@ -642,6 +723,7 @@ public class Main extends JFrame implements MouseListener
 		if(White==null||Black==null)
 			{JOptionPane.showMessageDialog(controlPanel, "Fill in the details");
 			return;}
+		SetBoard(game);
 		White.updateGamesPlayed();
 		White.Update_Player();
 		Black.updateGamesPlayed();
